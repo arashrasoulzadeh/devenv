@@ -22,57 +22,68 @@ jobs:
         with:
           go-version: "1.25"
 
+      - name: Run tests
+        run: go test ./... -v -race
+
       - name: Generate version (commit-based)
         run: |
           echo "VERSION=commit-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - name: Generate commit log
-        run: |
-          PREV=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-          if [ -z "$PREV" ]; then
-            git log --pretty=format:"- %s (%h)" >> $GITHUB_ENV
-          else
-            git log --pretty=format:"- %s (%h)" $PREV..HEAD >> $GITHUB_ENV
-          fi
-          echo "" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      - name: Build Linux binary
+      - name: Prepare release file
         run: |
           mkdir -p dist
-          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o dist/devenv-linux .
+          echo "# 🚀 Release $VERSION" > RELEASE.md
+          echo "" >> RELEASE.md
+          echo "## 📦 Builds + SHA256" >> RELEASE.md
+          echo "" >> RELEASE.md
 
-      - name: Build macOS binary (Intel)
+      - name: Build all platforms + SHA256
         run: |
-          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o dist/devenv-macos-intel .
+          set -e
 
-      - name: Build macOS binary (Apple Silicon)
-        run: |
-          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o dist/devenv-macos-arm64 .
+          build() {
+            OS=$1
+            ARCH=$2
+            EXT=$3
+            NAME=$4
 
-      - name: Build Windows binary
-        run: |
-          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o dist/devenv.exe .
+            echo "Building $NAME..."
+
+            OUT="dist/${NAME}${EXT}"
+
+            GOOS=$OS GOARCH=$ARCH go build -ldflags="-s -w" -o "$OUT" .
+
+            SHA=$(shasum -a 256 "$OUT" | awk '{print $1}')
+
+            echo "### $NAME" >> RELEASE.md
+            echo "- File: \`${NAME}${EXT}\`" >> RELEASE.md
+            echo "- SHA256: \`$SHA\`" >> RELEASE.md
+            echo "" >> RELEASE.md
+          }
+
+          # Linux
+          build linux amd64 "" devenv-linux
+          build linux arm64 "" devenv-linux-arm64
+          build linux 386 "" devenv-linux-386
+
+          # macOS
+          build darwin amd64 "" devenv-macos-intel
+          build darwin arm64 "" devenv-macos-arm64
+
+          # Windows
+          build windows amd64 ".exe" devenv-windows-amd64
+          build windows arm64 ".exe" devenv-windows-arm64
+
+      - name: Show release file
+        run: cat RELEASE.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION }}
           name: Release ${{ env.VERSION }}
-          body: |
-            ## 🚀 Changes
-            ${{ env.CHANGELOG }}
-
-            ## 📦 Builds
-            - Linux (amd64)
-            - macOS (Intel + ARM)
-            - Windows (amd64)
-
+          body_path: RELEASE.md
           files: |
-            dist/devenv-linux
-            dist/devenv-macos-intel
-            dist/devenv-macos-arm64
-            dist/devenv.exe
+            dist/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
