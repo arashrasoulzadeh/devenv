@@ -25,63 +25,62 @@ jobs:
       - name: Run tests
         run: go test ./... -v -race
 
-      - name: Generate version (commit-based)
+      - name: Generate version
         run: |
           echo "VERSION=commit-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - name: Prepare release file
-        run: |
-          mkdir -p dist
-          echo "# 🚀 Release $VERSION" > RELEASE.md
-          echo "" >> RELEASE.md
-          echo "## 📦 Builds + SHA256" >> RELEASE.md
-          echo "" >> RELEASE.md
-
-      - name: Build all platforms + SHA256
+      - name: Build binaries
         run: |
           set -e
+          mkdir -p dist
+
+          echo "## 🚀 Devenv Release ($VERSION)" > RELEASE.md
+          echo "" >> RELEASE.md
+          echo "A fast, minimal development environment manager built with Go." >> RELEASE.md
+          echo "" >> RELEASE.md
+
+          echo "## 📦 Downloads" >> RELEASE.md
+          echo "" >> RELEASE.md
 
           build() {
             OS=$1
             ARCH=$2
             EXT=$3
             NAME=$4
-
-            echo "Building $NAME..."
+            LABEL=$5
 
             OUT="dist/${NAME}${EXT}"
 
+            echo "Building $LABEL..."
             GOOS=$OS GOARCH=$ARCH go build -ldflags="-s -w" -o "$OUT" .
 
-            SHA=$(shasum -a 256 "$OUT" | awk '{print $1}')
-
-            echo "### $NAME" >> RELEASE.md
-            echo "- File: \`${NAME}${EXT}\`" >> RELEASE.md
-            echo "- SHA256: \`$SHA\`" >> RELEASE.md
-            echo "" >> RELEASE.md
+            echo "- **$LABEL** → \`${NAME}${EXT}\`" >> RELEASE.md
           }
 
-          # Linux
-          build linux amd64 "" devenv-linux
-          build linux arm64 "" devenv-linux-arm64
-          build linux 386 "" devenv-linux-386
+          echo "### 🐧 Linux" >> RELEASE.md
+          build linux amd64 "" devenv-linux "Linux (x86_64)"
+          build linux arm64 "" devenv-linux-arm64 "Linux (ARM64)"
+          build linux 386 "" devenv-linux-386 "Linux (x86)"
 
-          # macOS
-          build darwin amd64 "" devenv-macos-intel
-          build darwin arm64 "" devenv-macos-arm64
+          echo "" >> RELEASE.md
+          echo "### 🍎 macOS" >> RELEASE.md
+          build darwin amd64 "" devenv-macos-intel "macOS (Intel)"
+          build darwin arm64 "" devenv-macos-arm64 "macOS (Apple Silicon)"
 
-          # Windows
-          build windows amd64 ".exe" devenv-windows-amd64
-          build windows arm64 ".exe" devenv-windows-arm64
+          echo "" >> RELEASE.md
+          echo "### 🪟 Windows" >> RELEASE.md
+          build windows amd64 ".exe" devenv-windows-amd64 "Windows (64-bit)"
+          build windows arm64 ".exe" devenv-windows-arm64 "Windows (ARM64)"
 
-      - name: Show release file
-        run: cat RELEASE.md
+          echo "" >> RELEASE.md
+          echo "---" >> RELEASE.md
+          echo "✨ Built automatically from the latest commit." >> RELEASE.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION }}
-          name: Release ${{ env.VERSION }}
+          name: 🚀 Devenv ${{ env.VERSION }}
           body_path: RELEASE.md
           files: |
             dist/*
