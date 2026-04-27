@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/arashrasoulzadeh/devenv/src/app"
@@ -8,8 +9,34 @@ import (
 	"github.com/arashrasoulzadeh/devenv/src/log"
 )
 
+var (
+	commit    string
+	platform  string
+	buildDate string
+)
+
 func main() {
 	log.Start()
+
+	// version command
+	if len(os.Args) > 1 && os.Args[1] == "version" {
+		if commit == "" {
+			commit = "unknown"
+		}
+		if platform == "" {
+			platform = "unknown"
+		}
+		if buildDate == "" {
+			buildDate = "unknown"
+		}
+
+		fmt.Println("devenv")
+		fmt.Println(" commit:    ", commit)
+		fmt.Println(" platform:  ", platform)
+		fmt.Println(" built at:  ", buildDate)
+
+		os.Exit(0)
+	}
 
 	// ---- load config instance ----
 	c := config.New()

@@ -25,9 +25,11 @@ jobs:
       - name: Run tests
         run: go test ./... -v -race
 
-      - name: Generate version
+      - name: Generate build metadata
         run: |
+          echo "COMMIT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           echo "VERSION=commit-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "BUILDDATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_ENV
 
       - name: Build binaries
         run: |
@@ -35,6 +37,10 @@ jobs:
           mkdir -p dist
 
           echo "## 🚀 Devenv Release ($VERSION)" > RELEASE.md
+          echo "" >> RELEASE.md
+          echo "### 📌 Build Info" >> RELEASE.md
+          echo "- Commit: \`${COMMIT}\`" >> RELEASE.md
+          echo "- Build Date (UTC): \`${BUILDDATE}\`" >> RELEASE.md
           echo "" >> RELEASE.md
           echo "A fast, minimal development environment manager built with Go." >> RELEASE.md
           echo "" >> RELEASE.md
@@ -50,9 +56,16 @@ jobs:
             LABEL=$5
 
             OUT="dist/${NAME}${EXT}"
+            PLATFORM="${OS}/${ARCH}"
 
             echo "Building $LABEL..."
-            GOOS=$OS GOARCH=$ARCH go build -ldflags="-s -w" -o "$OUT" .
+
+            GOOS=$OS GOARCH=$ARCH go build \
+              -ldflags="-s -w \
+              -X main.commit=${COMMIT} \
+              -X main.platform=${PLATFORM} \
+              -X main.buildDate=${BUILDDATE}" \
+              -o "$OUT" .
 
             echo "- **$LABEL** → \`${NAME}${EXT}\`" >> RELEASE.md
           }
@@ -74,7 +87,7 @@ jobs:
 
           echo "" >> RELEASE.md
           echo "---" >> RELEASE.md
-          echo "✨ Built automatically from the latest commit." >> RELEASE.md
+          echo "✨ Built automatically from commit $COMMIT at $BUILDDATE" >> RELEASE.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
