@@ -1,124 +1,123 @@
 # devenv
 
 [![Go Build](https://github.com/arashrasoulzadeh/devenv/actions/workflows/go.yml/badge.svg)](https://github.com/arashrasoulzadeh/devenv/actions/workflows/go.yml)
-
-**devenv** is a lightweight CLI tool for managing development environment configuration using simple TOML files.  
-It lets you define layered environments (base + overrides) and generate outputs like `.env` files for your projects.
-
----
-
-## ✨ What It Does
-
-- Reads a TOML configuration file
-- Merges **base config + environment overrides**
-- Generates structured output files (e.g. `.env`)
-- Helps you standardize dev setups across environments (dev, staging, prod, etc.)
+[![Go Report Card](https://goreportcard.com/badge/github.com/arashrasoulzadeh/devenv)](https://goreportcard.com/report/github.com/arashrasoulzadeh/devenv)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Go Version](https://img.shields.io/badge/go-1.20%2B-blue)](https://golang.org/)
 
 ---
 
-### 📦 Install
+> **devenv** is a CLI tool for deterministic environment configuration management using TOML-based layering.
 
-#### macOS (Homebrew)
-```sh
+---
+
+## 📖 Table of Contents
+
+- [Overview](#-overview)
+- [Installation](#-installation)
+- [Quick Start](#-quick-start)
+- [Commands](#-commands)
+- [Configuration](#-configuration)
+- [How It Works](#-how-it-works)
+- [Examples](#-examples)
+- [Architecture](#-architecture)
+- [FAQ](#-faq)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## 🚀 Overview
+
+**devenv** solves a simple but painful problem:
+
+> Managing environment configs across dev, staging, and production without duplication or inconsistency.
+
+It introduces a **layered configuration model**:
+
+- `base` → shared defaults
+- `env` → overrides
+- deterministic merge → output file
+
+---
+
+## 📦 Installation
+
+### Homebrew (recommended)
+
+```bash
 brew install arashrasoulzadeh/tap/devenv
 ```
 
-#### All platforms (manual download)
-Head to the [Releases](https://github.com/arashrasoulzadeh/devenv/releases) page and download the appropriate binary for your OS:
+### Manual
 
-- **macOS:** `devenv-macos-intel` or `devenv-macos-arm64`
-- **Linux:** `devenv-linux`
-- **Windows:** `devenv.exe`
-
-Place the downloaded file in your PATH and make it executable (`chmod +x devenv*` on Linux/macOS).
-
-
-## 💡 Core Idea
-
-You define:
-
-- A **base configuration**
-- One or more **environment overrides** (e.g. `dev`, `prod`)
-
-Then devenv merges them and outputs the final result.
+```bash
+curl -L https://github.com/arashrasoulzadeh/devenv/releases/latest/download/devenv-linux -o devenv
+chmod +x devenv
+sudo mv devenv /usr/local/bin/
+```
 
 ---
 
-## ⚙️ How It Works
+## ⚡ Quick Start
 
-### 1. Create a config file (`config.toml`)
+### 1. Create config
 
 ```toml
-# add your config here
-
 [output]
 name = ".env"
 type = "dotenv"
 
 [base]
-name = "Arash \"The Dev\" Rasoulzadeh"
-mysql_host = "127.0.0.1"
-mysql_user = "arash"
-mysql_pass = "1234"
+app_name = "devenv"
+db_host = "localhost"
+db_user = "root"
 
 [dev]
-mysql_host = "dev.google.com"
-mysql_pass = 5143
+db_host = "dev.internal"
+db_user = "dev_user"
 ```
 
----
-
-### 2. Run devenv with an environment
+### 2. Run
 
 ```bash
 devenv dev
 ```
 
----
-
-### 3. Output result
-
-This will generate `.env`:
+### 3. Output
 
 ```env
-name=Arash "The Dev" Rasoulzadeh
-mysql_host=dev.google.com
-mysql_user=arash
-mysql_pass=5143
+app_name=devenv
+db_host=dev.internal
+db_user=dev_user
 ```
 
 ---
 
-## 🔁 Merge Rules
-
-1. Start with `[base]`
-2. Override with selected environment (e.g. `[dev]`)
-3. Flatten into output format
-
----
-
-## 🚀 Getting Started
-
-### Build from source
+## 🧰 Commands
 
 ```bash
-git clone https://github.com/arashrasoulzadeh/devenv.git
-cd devenv
-go build -o devenv ./...
-mv devenv /usr/local/bin/
+devenv <environment>
 ```
 
----
+| Command | Description |
+|--------|-------------|
+| `devenv dev` | Build dev environment |
+| `devenv staging` | Build staging environment |
+| `devenv prod` | Build production environment |
 
-### Run
+### Flags
 
 ```bash
-devenv --env dev
+--config, -c   Path to config file (default: config.toml)
+--output, -o   Override output file
 ```
 
 ---
 
-## 📁 Config Structure
+## ⚙️ Configuration
+
+### Structure
 
 ```toml
 [output]
@@ -126,24 +125,109 @@ name = ".env"
 type = "dotenv"
 
 [base]
-# default values
+# shared values
 
 [dev]
 # overrides
+
+[prod]
+# overrides
+```
+
+---
+
+### Rules
+
+1. Start from `[base]`
+2. Apply environment override
+3. Override only matching keys
+4. Flatten to key=value format
+
+---
+
+## 🧠 How It Works
+
+```mermaid
+flowchart TD
+    A[CLI Input] --> B[Load TOML]
+    B --> C[Parse Base]
+    C --> D[Apply Env Override]
+    D --> E[Merge Engine]
+    E --> F[Output Writer]
+    F --> G[.env file]
+```
+
+---
+
+## 💡 Examples
+
+### Multi-environment setup
+
+```bash
+devenv dev
+devenv staging
+devenv prod
+```
+
+---
+
+### CI/CD usage
+
+```bash
+devenv prod && export $(cat .env | xargs)
+```
+
+---
+
+## 🏗 Architecture
+
+```mermaid
+flowchart LR
+    CLI --> Parser
+    Parser --> Config
+    Config --> MergeEngine
+    MergeEngine --> Renderer
+    Renderer --> FileSystem
 ```
 
 ---
 
 ## ❓ FAQ
 
-**Q: What happens if a key is missing in env?**  
-A: It errors! .
+### What if a key is missing?
 
-**Q: Can I have multiple environments?**  
-A: Yes — `[dev]`, `[staging]`, `[prod]`, etc.
+Falls back to `base`. If not found there → error.
+
+### Can I add unlimited environments?
+
+Yes.
+
+### Is it deterministic?
+
+Yes — same input always produces same output.
+
+---
+
+## 🤝 Contributing
+
+PRs are welcome.
+
+```bash
+git clone https://github.com/arashrasoulzadeh/devenv
+go test ./...
+```
 
 ---
 
 ## 📄 License
 
-MIT
+MIT © Arash Rasoulzadeh
+
+---
+
+## ⭐ Why devenv?
+
+- No YAML complexity
+- No runtime magic
+- No dependency sprawl
+- Just predictable config merging
