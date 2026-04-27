@@ -173,7 +173,7 @@ flowchart TD
     C --> D[Apply Env Override]
     D --> E[Merge Engine]
     E --> F[Output Writer]
-    F --> G[Output file (.env, .yaml, .toml)]
+    F --> G[Output file]
 ```
 
 The output format is chosen based on the `[output.type]` field in your config. Supported options: `dotenv`, `yaml`, or `toml`.
