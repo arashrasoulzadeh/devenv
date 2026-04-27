@@ -1,28 +1,78 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: Go
+name: Release Build
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+
+permissions:
+  contents: write
 
 jobs:
-
-  build:
+  release:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.25'
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.25"
 
-    - name: Build
-      run: go build -v ./...
+      - name: Generate version (commit-based)
+        run: |
+          echo "VERSION=commit-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-    - name: Test
-      run: go test -v ./...
+      - name: Generate commit log
+        run: |
+          PREV=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          if [ -z "$PREV" ]; then
+            git log --pretty=format:"- %s (%h)" >> $GITHUB_ENV
+          else
+            git log --pretty=format:"- %s (%h)" $PREV..HEAD >> $GITHUB_ENV
+          fi
+          echo "" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Build Linux binary
+        run: |
+          mkdir -p dist
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o dist/devenv-linux .
+
+      - name: Build macOS binary (Intel)
+        run: |
+          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o dist/devenv-macos-intel .
+
+      - name: Build macOS binary (Apple Silicon)
+        run: |
+          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o dist/devenv-macos-arm64 .
+
+      - name: Build Windows binary
+        run: |
+          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o dist/devenv.exe .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: Release ${{ env.VERSION }}
+          body: |
+            ## 🚀 Changes
+            ${{ env.CHANGELOG }}
+
+            ## 📦 Builds
+            - Linux (amd64)
+            - macOS (Intel + ARM)
+            - Windows (amd64)
+
+          files: |
+            dist/devenv-linux
+            dist/devenv-macos-intel
+            dist/devenv-macos-arm64
+            dist/devenv.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
