@@ -3,6 +3,7 @@ package tests
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/arashrasoulzadeh/devenv/src/io"
@@ -10,29 +11,38 @@ import (
 
 func TestSaveToFile_SavesContentToFile(t *testing.T) {
 	tmpDir := t.TempDir()
+
 	testFile := filepath.Join(tmpDir, "testfile.txt")
 	content := "hello, io test!"
 
-	err := io.SaveToFile(testFile, content)
-	if err != nil {
+	if err := io.SaveToFile(testFile, content); err != nil {
 		t.Fatalf("SaveToFile failed: %v", err)
 	}
 
-	data, err := os.ReadFile(testFile)
+	got, err := os.ReadFile(testFile)
 	if err != nil {
-		t.Fatalf("Failed to read file: %v", err)
+		t.Fatalf("failed to read file: %v", err)
 	}
 
-	if string(data) != content {
-		t.Errorf("File contents mismatch: got %q, want %q", string(data), content)
+	if string(got) != content {
+		t.Fatalf("content mismatch:\n got:  %q\n want: %q", got, content)
 	}
 }
 
 func TestSaveToFile_HandlesInvalidPath(t *testing.T) {
-	// Use an invalid path (directory does not exist).
-	invalidPath := filepath.Join("does_not_exist_dir", "file.txt")
+	var invalidPath string
+
+	if runtime.GOOS == "windows" {
+		// Windows invalid path
+		invalidPath = `Z:\invalid_path_that_should_not_exist_\file.txt`
+	} else {
+		// Unix invalid path
+		invalidPath = "/this_path_should_not_exist_123456/file.txt"
+	}
+
 	err := io.SaveToFile(invalidPath, "data")
+
 	if err == nil {
-		t.Error("Expected error for invalid path, got nil")
+		t.Fatalf("expected error for invalid path, got nil")
 	}
 }
