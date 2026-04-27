@@ -1,64 +1,77 @@
 package tests
 
 import (
-	"fmt"
-	"sort"
-	"strings"
+	"testing"
+
+	"github.com/arashrasoulzadeh/devenv/src/renderer"
 )
 
-func ParseDotEnv(m map[string]any) string {
-	if len(m) == 0 {
-		return ""
+func TestParseDotEnv_EmptyMap(t *testing.T) {
+	input := map[string]any{}
+
+	got := renderer.ParseDotEnv(input)
+	want := ""
+
+	if got != want {
+		t.Errorf("expected empty string, got %q", got)
 	}
-
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	var b strings.Builder
-
-	for i, k := range keys {
-		v := m[k]
-
-		if v == nil {
-			continue
-		}
-
-		b.WriteString(k)
-		b.WriteString("=")
-		b.WriteString(toString(v))
-
-		if i != len(keys)-1 {
-			b.WriteString("\n")
-		}
-	}
-
-	return b.String()
 }
 
-func toString(v any) string {
-	switch t := v.(type) {
+func TestParseDotEnv_SingleString(t *testing.T) {
+	input := map[string]any{
+		"APP_NAME": "my app",
+	}
 
-	case string:
-		// escape quotes
-		t = strings.ReplaceAll(t, `"`, `\"`)
-		return fmt.Sprintf("\"%s\"", t)
+	got := renderer.ParseDotEnv(input)
+	want := `APP_NAME="my app"`
 
-	case int, int32, int64, float32, float64:
-		return fmt.Sprintf("%v", t)
+	if got != want {
+		t.Errorf("unexpected output: %q", got)
+	}
+}
 
-	case bool:
-		if t {
-			return "true"
-		}
-		return "false"
+func TestParseDotEnv_MultipleTypes(t *testing.T) {
+	input := map[string]any{
+		"DEBUG": true,
+		"PORT":  8080,
+		"NAME":  "api",
+	}
 
-	default:
-		if v == nil {
-			return ""
-		}
-		return fmt.Sprintf("%v", t)
+	got := renderer.ParseDotEnv(input)
+
+	// sorted keys: DEBUG, NAME, PORT
+	want := `DEBUG=true
+NAME="api"
+PORT=8080`
+
+	if got != want {
+		t.Errorf("unexpected output:\nGOT:\n%q\nWANT:\n%q", got, want)
+	}
+}
+
+func TestParseDotEnv_NilValueSkipped(t *testing.T) {
+	input := map[string]any{
+		"A": nil,
+		"B": "value",
+	}
+
+	got := renderer.ParseDotEnv(input)
+	want := `B="value"`
+
+	if got != want {
+		t.Errorf("expected nil to be skipped, got %q", got)
+	}
+}
+
+func TestParseDotEnv_StringEscaping(t *testing.T) {
+	input := map[string]any{
+		"KEY": `he said "hello"`,
+	}
+
+	got := renderer.ParseDotEnv(input)
+	want := `KEY="he said \"hello\""`
+
+	if got != want {
+		t.Errorf("unexpected escaping:\nGOT: %q\nWANT: %q", got, want)
 	}
 }

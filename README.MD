@@ -7,7 +7,7 @@
 
 ---
 
-> **devenv** is a CLI tool for deterministic environment configuration management using TOML-based layering.
+> **devenv** is a CLI tool for deterministic environment configuration management using TOML-based layering, now supporting output to dotenv, YAML, and TOML formats.
 
 ---
 
@@ -37,7 +37,9 @@ It introduces a **layered configuration model**:
 
 - `base` → shared defaults
 - `env` → overrides
-- deterministic merge → output file
+- deterministic merge → output file (dotenv, YAML, or TOML)
+
+Now you can choose the desired output format for your config: classic `.env`, YAML, or TOML.
 
 ---
 
@@ -66,7 +68,7 @@ sudo mv devenv /usr/local/bin/
 ```toml
 [output]
 name = ".env"
-type = "dotenv"
+type = "dotenv" # can be "dotenv", "yaml", or "toml"
 
 [base]
 app_name = "devenv"
@@ -86,10 +88,27 @@ devenv dev
 
 ### 3. Output
 
+The output format depends on `[output.type]`:
+
+#### Dotenv (default)
 ```env
 app_name=devenv
 db_host=dev.internal
 db_user=dev_user
+```
+
+#### YAML
+```yaml
+app_name: "devenv"
+db_host: "dev.internal"
+db_user: "dev_user"
+```
+
+#### TOML
+```toml
+app_name = "devenv"
+db_host = "dev.internal"
+db_user = "dev_user"
 ```
 
 ---
@@ -122,7 +141,7 @@ devenv <environment>
 ```toml
 [output]
 name = ".env"
-type = "dotenv"
+type = "dotenv" # can be "dotenv", "yaml", or "toml"
 
 [base]
 # shared values
@@ -141,7 +160,7 @@ type = "dotenv"
 1. Start from `[base]`
 2. Apply environment override
 3. Override only matching keys
-4. Flatten to key=value format
+4. Output as dotenv (`key=value`), YAML, or TOML
 
 ---
 
@@ -154,8 +173,11 @@ flowchart TD
     C --> D[Apply Env Override]
     D --> E[Merge Engine]
     E --> F[Output Writer]
-    F --> G[.env file]
+    F --> G[Output file (.env, .yaml, .toml)]
 ```
+
+The output format is chosen based on the `[output.type]` field in your config. Supported options: `dotenv`, `yaml`, or `toml`.
+(See `app.go` for how output type is handled: the tool selects `ParseTOML`, `ParseDotEnv`, or `ParseYAML` accordingly.)
 
 ---
 
@@ -176,6 +198,8 @@ devenv prod
 ```bash
 devenv prod && export $(cat .env | xargs)
 ```
+
+*(for YAML/TOML, use the output with compatible tools or parsers in your CI pipeline)*
 
 ---
 
@@ -206,6 +230,10 @@ Yes.
 
 Yes — same input always produces same output.
 
+### What output formats can I use?
+
+You can generate dotenv, YAML, or TOML outputs using `[output.type]`. The tool detects this and renders the correct format.
+
 ---
 
 ## 🤝 Contributing
@@ -227,7 +255,8 @@ MIT © Arash Rasoulzadeh
 
 ## ⭐ Why devenv?
 
-- No YAML complexity
+- Predictable, deterministic config layering
+- Choose your output: dotenv, YAML, or TOML
 - No runtime magic
 - No dependency sprawl
-- Just predictable config merging
+- Just simple, portable configuration!

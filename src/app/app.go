@@ -87,12 +87,20 @@ func (r *Runner) Run(args []string) error {
 		outputType = v
 	}
 
-	if outputType != "dotenv" {
-		return fmt.Errorf("only dotenv output type is supported")
+	if outputType != "dotenv" && outputType != "toml" && outputType != "yaml" {
+		return fmt.Errorf("only dotenv and toml output types are supported")
 	}
 
+	formatted := ""
 	// ---- render ----
-	formatted := renderer.ParseDotEnv(final)
+	switch outputType {
+	case "toml":
+		formatted = renderer.ParseTOML(final)
+	case "dotenv":
+		formatted = renderer.ParseDotEnv(final)
+	case "yaml":
+		formatted = renderer.ParseYAML(final)
+	}
 
 	fullPath := filepath.Join(r.OutputDir, outputName)
 
