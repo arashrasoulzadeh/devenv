@@ -51,13 +51,17 @@ Now you can choose the desired output format for your config: classic `.env`, YA
 brew install arashrasoulzadeh/tap/devenv
 ```
 
-### Manual
+### Manual Download
+
+Grab the latest release for your OS from the [Releases page](https://github.com/arashrasoulzadeh/devenv/releases):
 
 ```bash
 curl -L https://github.com/arashrasoulzadeh/devenv/releases/latest/download/devenv-linux -o devenv
 chmod +x devenv
 sudo mv devenv /usr/local/bin/
 ```
+
+Or browse for Windows/macOS/Linux binaries on the [Releases page](https://github.com/arashrasoulzadeh/devenv/releases).
 
 ---
 
