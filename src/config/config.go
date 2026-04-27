@@ -9,41 +9,66 @@ import (
 )
 
 var (
-	cfg  map[string]map[string]any
-	once sync.Once
+	cfg map[string]map[string]any
+	mu  sync.RWMutex
 )
 
 const fileName = "config.toml"
 const defaultContent = ""
 
-func Parse(path string) {
+func Parse(path string) error {
 	if path == "" {
 		path = fileName
 	}
 
 	data, err := load(path)
 	if err != nil {
-		handleErr(err, path)
-		return
+		return handleErr(err, path)
 	}
 
-	once.Do(func() {
-		cfg = data
-	})
+	mu.Lock()
+	cfg = data
+	mu.Unlock()
+
+	return nil
 }
 
 func Get() map[string]map[string]any {
-	return cfg
+	mu.RLock()
+	defer mu.RUnlock()
+
+	if cfg == nil {
+		return nil
+	}
+
+	// return copy to prevent mutation bugs
+	out := make(map[string]map[string]any, len(cfg))
+	for k, v := range cfg {
+		cp := make(map[string]any, len(v))
+		for k2, v2 := range v {
+			cp[k2] = v2
+		}
+		out[k] = cp
+	}
+
+	return out
+}
+
+func Reset() {
+	mu.Lock()
+	defer mu.Unlock()
+	cfg = nil
 }
 
 func load(path string) (map[string]map[string]any, error) {
 	raw := make(map[string]any)
-	_, err := toml.DecodeFile(path, &raw)
-	if err != nil {
+
+	if _, err := toml.DecodeFile(path, &raw); err != nil {
 		return nil, err
 	}
 
 	out := make(map[string]map[string]any)
+
 	for k, v := range raw {
 		if m, ok := v.(map[string]any); ok {
 			out[k] = m
@@ -53,17 +78,21 @@ func load(path string) (map[string]map[string]any, error) {
 	return out, nil
 }
 
-func handleErr(err error, path string) {
-	switch {
-	case os.IsNotExist(err):
+func handleErr(err error, path string) error {
+	if os.IsNotExist(err) {
 		if create(path) {
-			fmt.Printf("created config: %s\n", path)
+			fmt.Printf("[INFO] created config: %s\n", path)
 		}
-	case os.IsPermission(err):
-		fmt.Printf("no permission: %s\n", path)
-	default:
-		fmt.Printf("decode error '%s': %v\n", path, err)
+		return err
 	}
+
+	if os.IsPermission(err) {
+		fmt.Printf("[ERROR] no permission: %s\n", path)
+		return err
+	}
+
+	fmt.Printf("[ERROR] decode error '%s': %v\n", path, err)
+	return err
 }
 
 func create(path string) bool {
