@@ -61,8 +61,6 @@ chmod +x devenv
 sudo mv devenv /usr/local/bin/
 ```
 
-Or browse for Windows/macOS/Linux binaries on the [Releases page](https://github.com/arashrasoulzadeh/devenv/releases).
-
 ---
 
 ## ⚡ Quick Start
