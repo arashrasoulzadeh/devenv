@@ -1,0 +1,36 @@
+# Binaries
+/bin/
+/build/
+/dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+.env
+*.toml
+
+# Test binary
+*.test
+
+# Coverage
+*.out
+
+# Go workspace file
+go.work
+
+# Vendor (optional, uncomment if you don't commit vendor)
+/vendor/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
