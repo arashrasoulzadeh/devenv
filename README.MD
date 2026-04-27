@@ -16,6 +16,23 @@ It lets you define layered environments (base + overrides) and generate outputs 
 
 ---
 
+### 📦 Install
+
+#### macOS (Homebrew)
+```sh
+brew install arashrasoulzadeh/tap/devenv
+```
+
+#### All platforms (manual download)
+Head to the [Releases](https://github.com/arashrasoulzadeh/devenv/releases) page and download the appropriate binary for your OS:
+
+- **macOS:** `devenv-macos-intel` or `devenv-macos-arm64`
+- **Linux:** `devenv-linux`
+- **Windows:** `devenv.exe`
+
+Place the downloaded file in your PATH and make it executable (`chmod +x devenv*` on Linux/macOS).
+
+
 ## 💡 Core Idea
 
 You define:
