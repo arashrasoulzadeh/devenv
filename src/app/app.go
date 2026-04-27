@@ -11,25 +11,23 @@ import (
 )
 
 type Runner struct {
-	ConfigPath string
-	OutputDir  string
+	cfg       *config.Config
+	OutputDir string
 }
 
-func New(configPath string) *Runner {
+func New(cfg *config.Config) *Runner {
 	return &Runner{
-		ConfigPath: configPath,
-		OutputDir:  ".",
+		cfg:       cfg,
+		OutputDir: ".",
 	}
 }
 
-func (r *Runner) Run(args []string) {
+func (r *Runner) Run(args []string) error {
 	log.Start()
 
-	config.Parse(r.ConfigPath)
-
-	raw := config.Get()
+	raw := r.cfg.Get()
 	if raw == nil {
-		log.Fatal("config is nil after parsing")
+		return fmt.Errorf("config is nil")
 	}
 
 	base := map[string]any{}
@@ -58,7 +56,7 @@ func (r *Runner) Run(args []string) {
 		env = args[1]
 
 		if _, ok := variants[env]; !ok {
-			log.Fatal(fmt.Sprintf("environment '%s' not found", env))
+			return fmt.Errorf("environment '%s' not found", env)
 		}
 
 		log.Info("switching to", env)
@@ -66,6 +64,7 @@ func (r *Runner) Run(args []string) {
 
 	// ---- merge config ----
 	final := make(map[string]any, len(base))
+
 	for k, v := range base {
 		final[k] = v
 	}
@@ -89,7 +88,7 @@ func (r *Runner) Run(args []string) {
 	}
 
 	if outputType != "dotenv" {
-		log.Fatal("only dotenv output type is supported")
+		return fmt.Errorf("only dotenv output type is supported")
 	}
 
 	// ---- render ----
@@ -98,8 +97,10 @@ func (r *Runner) Run(args []string) {
 	fullPath := filepath.Join(r.OutputDir, outputName)
 
 	if err := io.SaveToFile(fullPath, formatted); err != nil {
-		log.Fatal(fmt.Sprintf("failed to write output file: %v", err))
+		return fmt.Errorf("failed to write output file: %w", err)
 	}
 
 	log.Info("generated file:", fullPath)
+
+	return nil
 }

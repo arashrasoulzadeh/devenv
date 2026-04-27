@@ -12,16 +12,16 @@ import (
 
 func readFile(t *testing.T, path string) string {
 	t.Helper()
+
 	b, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("read file failed: %v", err)
 	}
+
 	return string(b)
 }
 
 func TestApp_Run_DefaultEnv(t *testing.T) {
-	config.Reset() // ⭐ IMPORTANT FIX
-
 	dir := t.TempDir()
 
 	configPath := filepath.Join(dir, "config.toml")
@@ -40,7 +40,13 @@ type = "dotenv"
 DEBUG = true
 `)
 
-	r := app.New(configPath)
+	// 🔥 NEW: instance-based config
+	c := config.New()
+	if err := c.Load(configPath); err != nil {
+		t.Fatalf("config load failed: %v", err)
+	}
+
+	r := app.New(c)
 	r.OutputDir = dir
 
 	r.Run([]string{"cmd"})
@@ -52,13 +58,11 @@ DEBUG = true
 	}
 
 	if !strings.Contains(got, "PORT=8080") {
-		t.Fatalf("missing PORT, got:\n%s", got)
+		t.Fatalf("missing PORT=8080, got:\n%s", got)
 	}
 }
 
 func TestApp_Run_WithEnvOverlay(t *testing.T) {
-	config.Reset() // ⭐ IMPORTANT FIX
-
 	dir := t.TempDir()
 
 	configPath := filepath.Join(dir, "config.toml")
@@ -78,7 +82,13 @@ PORT = 80
 DEBUG = false
 `)
 
-	r := app.New(configPath)
+	// 🔥 NEW: instance-based config
+	c := config.New()
+	if err := c.Load(configPath); err != nil {
+		t.Fatalf("config load failed: %v", err)
+	}
+
+	r := app.New(c)
 	r.OutputDir = dir
 
 	r.Run([]string{"cmd", "production"})

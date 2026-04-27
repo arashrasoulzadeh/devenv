@@ -47,8 +47,14 @@ PORT = 80
 	tmpFile := filepath.Join(t.TempDir(), "config.toml")
 	writeFile(t, tmpFile, content)
 
-	config.Parse(tmpFile)
-	cfg := config.Get()
+	// 🔥 NEW: instance-based config (no global state)
+	c := config.New()
+
+	if err := c.Load(tmpFile); err != nil {
+		t.Fatalf("failed to load config: %v", err)
+	}
+
+	cfg := c.Get()
 
 	// ---- base ----
 	base := mustGetSection(t, cfg, "base")

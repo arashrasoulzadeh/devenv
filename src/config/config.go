@@ -1,49 +1,49 @@
 package config
 
 import (
-	"fmt"
 	"os"
-	"sync"
 
 	"github.com/BurntSushi/toml"
-)
-
-var (
-	cfg map[string]map[string]any
-	mu  sync.RWMutex
 )
 
 const fileName = "config.toml"
 const defaultContent = ""
 
-func Parse(path string) error {
+type Config struct {
+	data map[string]map[string]any
+}
+
+// constructor
+func New() *Config {
+	return &Config{
+		data: make(map[string]map[string]any),
+	}
+}
+
+// Load reads and parses config file into THIS instance
+func (c *Config) Load(path string) error {
 	if path == "" {
 		path = fileName
 	}
 
-	data, err := load(path)
+	raw, err := load(path)
 	if err != nil {
 		return handleErr(err, path)
 	}
 
-	mu.Lock()
-	cfg = data
-	mu.Unlock()
-
+	c.data = raw
 	return nil
 }
 
-func Get() map[string]map[string]any {
-	mu.RLock()
-	defer mu.RUnlock()
-
-	if cfg == nil {
+// Get returns a SAFE copy (no mutation leaks)
+func (c *Config) Get() map[string]map[string]any {
+	if c.data == nil {
 		return nil
 	}
 
-	// return copy to prevent mutation bugs
-	out := make(map[string]map[string]any, len(cfg))
-	for k, v := range cfg {
+	out := make(map[string]map[string]any, len(c.data))
+
+	for k, v := range c.data {
 		cp := make(map[string]any, len(v))
 		for k2, v2 := range v {
 			cp[k2] = v2
@@ -54,11 +54,7 @@ func Get() map[string]map[string]any {
 	return out
 }
 
-func Reset() {
-	mu.Lock()
-	defer mu.Unlock()
-	cfg = nil
-}
+// ----------------- internal helpers -----------------
 
 func load(path string) (map[string]map[string]any, error) {
 	raw := make(map[string]any)
@@ -80,29 +76,24 @@ func load(path string) (map[string]map[string]any, error) {
 
 func handleErr(err error, path string) error {
 	if os.IsNotExist(err) {
-		if create(path) {
-			fmt.Printf("[INFO] created config: %s\n", path)
-		}
+		_ = create(path)
 		return err
 	}
 
 	if os.IsPermission(err) {
-		fmt.Printf("[ERROR] no permission: %s\n", path)
 		return err
 	}
 
-	fmt.Printf("[ERROR] decode error '%s': %v\n", path, err)
 	return err
 }
 
-func create(path string) bool {
+func create(path string) error {
 	f, err := os.Create(path)
 	if err != nil {
-		fmt.Println(err)
-		return false
+		return err
 	}
 	defer f.Close()
 
 	_, err = f.WriteString(defaultContent)
-	return err == nil
+	return err
 }
