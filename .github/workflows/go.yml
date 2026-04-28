@@ -47,9 +47,8 @@ jobs:
 
           echo "" >> RELEASE.md
           echo "### 📝 Commit Description" >> RELEASE.md
-          echo "\`\`\`" >> RELEASE.md
           echo "${COMMIT_BODY}" >> RELEASE.md
-          echo "\`\`\`" >> RELEASE.md
+     
 
           echo "" >> RELEASE.md
           echo "A fast, minimal development environment manager built with Go." >> RELEASE.md
