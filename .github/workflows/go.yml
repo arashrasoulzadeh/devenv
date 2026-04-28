@@ -72,9 +72,9 @@ jobs:
 
             GOOS=$OS GOARCH=$ARCH go build \
               -ldflags="-s -w \
-              -X main.commit=${COMMIT} \
-              -X main.platform=${PLATFORM} \
-              -X main.buildDate=${BUILDDATE}" \
+              -X github.com/arashrasoulzadeh/devenv/src/commands.commit=${COMMIT} \
+              -X github.com/arashrasoulzadeh/devenv/src/commands.platform=${PLATFORM} \
+              -X github.com/arashrasoulzadeh/devenv/src/commands.buildDate=${BUILDDATE}" \
               -o "$OUT" .
 
             echo "- **$LABEL** → \`${NAME}${EXT}\`" >> RELEASE.md
