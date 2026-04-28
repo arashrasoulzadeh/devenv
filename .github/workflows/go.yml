@@ -30,6 +30,9 @@ jobs:
           echo "COMMIT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           echo "VERSION=commit-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
           echo "BUILDDATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_ENV
+          echo "COMMIT_BODY<<EOF" >> $GITHUB_ENV
+          git log -1 --pretty=%B >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Build binaries
         run: |
@@ -41,6 +44,13 @@ jobs:
           echo "### 📌 Build Info" >> RELEASE.md
           echo "- Commit: \`${COMMIT}\`" >> RELEASE.md
           echo "- Build Date (UTC): \`${BUILDDATE}\`" >> RELEASE.md
+
+          echo "" >> RELEASE.md
+          echo "### 📝 Commit Description" >> RELEASE.md
+          echo "\`\`\`" >> RELEASE.md
+          echo "${COMMIT_BODY}" >> RELEASE.md
+          echo "\`\`\`" >> RELEASE.md
+
           echo "" >> RELEASE.md
           echo "A fast, minimal development environment manager built with Go." >> RELEASE.md
           echo "" >> RELEASE.md
