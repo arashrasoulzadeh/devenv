@@ -17,6 +17,7 @@
 - [Installation](#-installation)
 - [Quick Start](#-quick-start)
 - [Commands](#-commands)
+- [Help & Version](#help--version)
 - [Configuration](#-configuration)
 - [How It Works](#-how-it-works)
 - [Examples](#-examples)
@@ -115,24 +116,76 @@ db_user = "dev_user"
 
 ---
 
-## 🧰 Commands
+## 🧰 Commands & CLI Usage
 
-```bash
-devenv <environment>
+### Basic Usage
+
+```
+devenv [environment] [flags]
 ```
 
-| Command | Description |
-|--------|-------------|
-| `devenv dev` | Build dev environment |
-| `devenv staging` | Build staging environment |
-| `devenv prod` | Build production environment |
+- `environment`: Name of the environment section to use (e.g. `dev`, `staging`, `prod`).
+- Flags: See below for supported flags.
 
-### Flags
+#### Common Commands
+
+| Command                | Description                                   |
+|------------------------|-----------------------------------------------|
+| `devenv dev`           | Build the config for the dev environment      |
+| `devenv staging`       | Build the config for the staging environment  |
+| `devenv prod`          | Build the config for the prod environment     |
+| `devenv help`          | Show help/usage information                   |
+| `devenv version`       | Print version, build date, commit info        |
+
+### Full CLI Help
+
+You can always run:
 
 ```bash
---config, -c   Path to config file (default: config.toml)
---output, -o   Override output file
+devenv help
 ```
+
+To see CLI help and all possible usages, which prints:
+
+```
+devenv - Deterministic Environment Configuration Manager
+
+Usage:
+  devenv [environment]
+
+Description:
+  devenv generates environment configuration files in multiple formats (dotenv, YAML, TOML)
+  using a simple, layered TOML configuration.
+
+Available Commands:
+  help        Display this help message
+  version     Show version and build information
+
+Examples:
+  devenv dev         # Generate config using the 'dev' environment
+  devenv help        # Display this help message
+  devenv version     # Print version information
+```
+
+---
+
+## 🆘 Help & Version
+
+### Show help
+
+```bash
+devenv help
+```
+
+- Prints a help message with usage instructions and exits.
+
+### Show version
+
+```bash
+devenv version
+```
+
+- Prints the current version, build date, and commit hash for debugging and support.
 
 ---
 
