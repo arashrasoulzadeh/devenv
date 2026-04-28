@@ -2,8 +2,8 @@
 
 [![Go Build](https://github.com/arashrasoulzadeh/devenv/actions/workflows/go.yml/badge.svg)](https://github.com/arashrasoulzadeh/devenv/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/arashrasoulzadeh/devenv)](https://goreportcard.com/report/github.com/arashrasoulzadeh/devenv)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Go Version](https://img.shields.io/badge/go-1.20%2B-blue)](https://golang.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Go Version](https://img.shields.io/badge/go-1.20%2B-blue)](https://go.dev/)
 
 ---
 
@@ -18,7 +18,7 @@
 - [Quick Start](#-quick-start)
 - [Commands](#-commands)
 - [Help & Version](#help--version)
-- [Configuration](#-configuration)
+- [Configuration](#️-configuration)
 - [How It Works](#-how-it-works)
 - [Examples](#-examples)
 - [Architecture](#-architecture)
@@ -232,7 +232,7 @@ flowchart TD
 ```
 
 The output format is chosen based on the `[output.type]` field in your config. Supported options: `dotenv`, `yaml`, or `toml`.
-(See `app.go` for how output type is handled: the tool selects `ParseTOML`, `ParseDotEnv`, or `ParseYAML` accordingly.)
+(See [`app.go`](./app.go) for how output type is handled: the tool selects `ParseTOML`, `ParseDotEnv`, or `ParseYAML` accordingly.)
 
 ---
 
@@ -304,7 +304,7 @@ go test ./...
 
 ## 📄 License
 
-MIT © Arash Rasoulzadeh
+MIT © [Arash Rasoulzadeh](https://github.com/arashrasoulzadeh)
 
 ---
 
