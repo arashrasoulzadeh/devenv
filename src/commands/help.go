@@ -19,6 +19,9 @@ Available Commands:
   help        Display this help message
   version     Show version and build information
 
+  Flags:
+    --config FILE   Specify custom config file path
+
 Examples:
   devenv dev         # Generate config using the 'dev' environment
   devenv help        # Display this help message

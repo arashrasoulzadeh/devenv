@@ -133,6 +133,21 @@ devenv staging
 devenv prod
 ```
 
+### Flags
+
+| Flag          | Description                      |
+|---------------|----------------------------------|
+| --config FILE | Specify custom config file path   |
+
+You can pass flags before or after the environment name:
+
+```bash
+devenv --config myconf.toml dev
+```
+
+These flags allow you to customize the config file source and where output files are written.
+
+
 ### Commands
 
 | Command            | Description                  |

@@ -1,6 +1,8 @@
 package config
 
 import (
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/BurntSushi/toml"
@@ -77,7 +79,7 @@ func load(path string) (map[string]map[string]any, error) {
 func handleErr(err error, path string) error {
 	if os.IsNotExist(err) {
 		_ = create(path)
-		return err
+		return errors.New(fmt.Sprintf("file %s not found,so created %s with empty data", path, path))
 	}
 
 	if os.IsPermission(err) {
