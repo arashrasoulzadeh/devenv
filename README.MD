@@ -1,46 +1,48 @@
 # devenv
 
-[![Go Build](https://github.com/arashrasoulzadeh/devenv/actions/workflows/go.yml/badge.svg)](https://github.com/arashrasoulzadeh/devenv/actions/workflows/go.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/arashrasoulzadeh/devenv)](https://goreportcard.com/report/github.com/arashrasoulzadeh/devenv)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Go Version](https://img.shields.io/badge/go-1.20%2B-blue)](https://go.dev/)
+<p align="center">
+  <b>Deterministic environment configuration management — simple, predictable, and fast.</b>
+</p>
+
+<p align="center">
+  <a href="https://github.com/arashrasoulzadeh/devenv/actions/workflows/go.yml">
+    <img src="https://github.com/arashrasoulzadeh/devenv/actions/workflows/go.yml/badge.svg" alt="Build Status">
+  </a>
+  <a href="https://goreportcard.com/report/github.com/arashrasoulzadeh/devenv">
+    <img src="https://goreportcard.com/badge/github.com/arashrasoulzadeh/devenv" alt="Go Report Card">
+  </a>
+  <a href="./LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
+  </a>
+  <a href="https://go.dev/">
+    <img src="https://img.shields.io/badge/go-1.20%2B-blue" alt="Go Version">
+  </a>
+</p>
 
 ---
 
-> **devenv** is a CLI tool for deterministic environment configuration management using TOML-based layering, now supporting output to dotenv, YAML, and TOML formats.
+## ✨ Overview
+
+**devenv** is a modern CLI tool for managing environment configurations using a **deterministic layered model**.
+
+No duplication. No surprises. No runtime magic.
+
+Define your configuration once, override per environment, and generate clean output in:
+
+- `.env`
+- `YAML`
+- `TOML`
 
 ---
 
-## 📖 Table of Contents
+## 🚀 Why devenv?
 
-- [Overview](#-overview)
-- [Installation](#-installation)
-- [Quick Start](#-quick-start)
-- [Commands](#-commands)
-- [Help & Version](#help--version)
-- [Configuration](#️-configuration)
-- [How It Works](#-how-it-works)
-- [Examples](#-examples)
-- [Architecture](#-architecture)
-- [FAQ](#-faq)
-- [Contributing](#-contributing)
-- [License](#-license)
-
----
-
-## 🚀 Overview
-
-**devenv** solves a simple but painful problem:
-
-> Managing environment configs across dev, staging, and production without duplication or inconsistency.
-
-It introduces a **layered configuration model**:
-
-- `base` → shared defaults
-- `env` → overrides
-- deterministic merge → output file (dotenv, YAML, or TOML)
-
-Now you can choose the desired output format for your config: classic `.env`, YAML, or TOML.
+- 🔁 Deterministic config merging
+- 🧩 Clean layering: `base → env`
+- 📦 Multiple output formats
+- ⚡ Fast, dependency-free CLI
+- 🛠 CI/CD friendly
+- 🧠 Zero magic — fully predictable
 
 ---
 
@@ -52,15 +54,15 @@ Now you can choose the desired output format for your config: classic `.env`, YA
 brew install arashrasoulzadeh/tap/devenv
 ```
 
-### Manual Download
-
-Grab the latest release for your OS from the [Releases page](https://github.com/arashrasoulzadeh/devenv/releases):
+### Manual
 
 ```bash
 curl -L https://github.com/arashrasoulzadeh/devenv/releases/latest/download/devenv-linux -o devenv
 chmod +x devenv
 sudo mv devenv /usr/local/bin/
 ```
+
+📥 Releases: https://github.com/arashrasoulzadeh/devenv/releases
 
 ---
 
@@ -71,7 +73,7 @@ sudo mv devenv /usr/local/bin/
 ```toml
 [output]
 name = ".env"
-type = "dotenv" # can be "dotenv", "yaml", or "toml"
+type = "dotenv"
 
 [base]
 app_name = "devenv"
@@ -91,9 +93,8 @@ devenv dev
 
 ### 3. Output
 
-The output format depends on `[output.type]`:
+#### Dotenv
 
-#### Dotenv (default)
 ```env
 app_name=devenv
 db_host=dev.internal
@@ -101,6 +102,7 @@ db_user=dev_user
 ```
 
 #### YAML
+
 ```yaml
 app_name: "devenv"
 db_host: "dev.internal"
@@ -108,6 +110,7 @@ db_user: "dev_user"
 ```
 
 #### TOML
+
 ```toml
 app_name = "devenv"
 db_host = "dev.internal"
@@ -116,87 +119,38 @@ db_user = "dev_user"
 
 ---
 
-## 🧰 Commands & CLI Usage
-
-### Basic Usage
-
-```
-devenv [environment] [flags]
-```
-
-- `environment`: Name of the environment section to use (e.g. `dev`, `staging`, `prod`).
-- Flags: See below for supported flags.
-
-#### Common Commands
-
-| Command                | Description                                   |
-|------------------------|-----------------------------------------------|
-| `devenv dev`           | Build the config for the dev environment      |
-| `devenv staging`       | Build the config for the staging environment  |
-| `devenv prod`          | Build the config for the prod environment     |
-| `devenv help`          | Show help/usage information                   |
-| `devenv version`       | Print version, build date, commit info        |
-
-### Full CLI Help
-
-You can always run:
+## 🧰 CLI Usage
 
 ```bash
-devenv help
+devenv [environment]
 ```
 
-To see CLI help and all possible usages, which prints:
-
-```
-devenv - Deterministic Environment Configuration Manager
-
-Usage:
-  devenv [environment]
-
-Description:
-  devenv generates environment configuration files in multiple formats (dotenv, YAML, TOML)
-  using a simple, layered TOML configuration.
-
-Available Commands:
-  help        Display this help message
-  version     Show version and build information
-
-Examples:
-  devenv dev         # Generate config using the 'dev' environment
-  devenv help        # Display this help message
-  devenv version     # Print version information
-```
-
----
-
-## 🆘 Help & Version
-
-### Show help
+### Examples
 
 ```bash
-devenv help
+devenv dev
+devenv staging
+devenv prod
 ```
 
-- Prints a help message with usage instructions and exits.
+### Commands
 
-### Show version
-
-```bash
-devenv version
-```
-
-- Prints the current version, build date, and commit hash for debugging and support.
+| Command            | Description                  |
+|-------------------|------------------------------|
+| devenv dev        | Generate dev config          |
+| devenv staging    | Generate staging config      |
+| devenv prod       | Generate production config   |
+| devenv help       | Show help                    |
+| devenv version    | Show version info            |
 
 ---
 
 ## ⚙️ Configuration
 
-### Structure
-
 ```toml
 [output]
 name = ".env"
-type = "dotenv" # can be "dotenv", "yaml", or "toml"
+type = "dotenv"
 
 [base]
 # shared values
@@ -208,14 +162,12 @@ type = "dotenv" # can be "dotenv", "yaml", or "toml"
 # overrides
 ```
 
----
-
 ### Rules
 
-1. Start from `[base]`
-2. Apply environment override
-3. Override only matching keys
-4. Output as dotenv (`key=value`), YAML, or TOML
+1. Load `[base]`
+2. Apply environment overrides
+3. Merge deterministically
+4. Render output format
 
 ---
 
@@ -223,38 +175,37 @@ type = "dotenv" # can be "dotenv", "yaml", or "toml"
 
 ```mermaid
 flowchart TD
-    A[CLI Input] --> B[Load TOML]
-    B --> C[Parse Base]
-    C --> D[Apply Env Override]
+    A[CLI Input] --> B[Load Config]
+    B --> C[Base Layer]
+    C --> D[Env Override]
     D --> E[Merge Engine]
-    E --> F[Output Writer]
-    F --> G[Output file]
-```
-
-The output format is chosen based on the `[output.type]` field in your config. Supported options: `dotenv`, `yaml`, or `toml`.
-(See [`app.go`](./app.go) for how output type is handled: the tool selects `ParseTOML`, `ParseDotEnv`, or `ParseYAML` accordingly.)
-
----
-
-## 💡 Examples
-
-### Multi-environment setup
-
-```bash
-devenv dev
-devenv staging
-devenv prod
+    E --> F[Renderer]
+    F --> G[Output File]
 ```
 
 ---
 
-### CI/CD usage
+## 💡 CI/CD Example
 
 ```bash
 devenv prod && export $(cat .env | xargs)
 ```
 
-*(for YAML/TOML, use the output with compatible tools or parsers in your CI pipeline)*
+---
+
+## ❓ FAQ
+
+**Missing key?**  
+Falls back to `base`. If not found → error.
+
+**Unlimited environments?**  
+Yes.
+
+**Deterministic?**  
+Always.
+
+**Supported formats?**  
+dotenv, YAML, TOML
 
 ---
 
@@ -271,47 +222,23 @@ flowchart LR
 
 ---
 
-## ❓ FAQ
-
-### What if a key is missing?
-
-Falls back to `base`. If not found there → error.
-
-### Can I add unlimited environments?
-
-Yes.
-
-### Is it deterministic?
-
-Yes — same input always produces same output.
-
-### What output formats can I use?
-
-You can generate dotenv, YAML, or TOML outputs using `[output.type]`. The tool detects this and renders the correct format.
-
----
-
 ## 🤝 Contributing
-
-PRs are welcome.
 
 ```bash
 git clone https://github.com/arashrasoulzadeh/devenv
 go test ./...
 ```
 
+PRs welcome.
+
 ---
 
 ## 📄 License
 
-MIT © [Arash Rasoulzadeh](https://github.com/arashrasoulzadeh)
+MIT © Arash Rasoulzadeh
 
 ---
 
-## ⭐ Why devenv?
+## ⭐ Star History
 
-- Predictable, deterministic config layering
-- Choose your output: dotenv, YAML, or TOML
-- No runtime magic
-- No dependency sprawl
-- Just simple, portable configuration!
+If you like this project, give it a ⭐ on GitHub!
