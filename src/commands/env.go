@@ -12,29 +12,21 @@ import (
 )
 
 func EnvCommand(args []string, r *app.Runner) {
-	envs := os.Environ()
+	osEnv := make(map[string]string)
 
-	environementVariables := make(map[string]string)
-
-	for _, env := range envs {
-		// each env supposed to be in "KEY=value" format
-		parts := strings.SplitN(env, "=", 2)
-		key := parts[0]
-		value := parts[1]
-		environementVariables[key] = value
-
+	for _, entry := range os.Environ() {
+		parts := strings.SplitN(entry, "=", 2)
+		if len(parts) == 2 {
+			osEnv[parts[0]] = parts[1]
+		}
 	}
 
-	//replace requested env name with "env" in command args
-	appArgs := []string{"env", args[2], consts.DontCommitFlag}
-
-	if err := r.Run(appArgs); err != nil {
+	if err := r.Run([]string{"env", args[2], consts.DontCommitFlag}); err != nil {
 		log.Fatal(err)
 	}
 
-	//check non existing envs
 	for key, value := range r.FinalCfg {
-		if _, exists := environementVariables[key]; !exists {
+		if _, exists := osEnv[key]; !exists {
 			if slices.Contains(args, consts.NoValuesFlag) {
 				log.Info(fmt.Sprintf("environment does not have %s", key))
 			} else {

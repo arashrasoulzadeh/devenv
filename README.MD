@@ -21,34 +21,17 @@
 
 ---
 
-## ✨ Overview
+## Overview
 
-**devenv** is a modern CLI tool for managing environment configurations using a **deterministic layered model**.
+**devenv** is a CLI tool for managing environment configurations using a layered TOML config.
 
-No duplication. No surprises. No runtime magic.
-
-Define your configuration once, override per environment, and generate clean output in:
-
-- `.env`
-- `YAML`
-- `TOML`
+Define shared values in `[base]`, add per-environment overrides, and generate a clean output file in dotenv, YAML, or TOML format. No duplication, no surprises.
 
 ---
 
-## 🚀 Why devenv?
+## Installation
 
-- 🔁 Deterministic config merging
-- 🧩 Clean layering: `base → env`
-- 📦 Multiple output formats
-- ⚡ Fast, dependency-free CLI
-- 🛠 CI/CD friendly
-- 🧠 Zero magic — fully predictable
-
----
-
-## 📦 Installation
-
-### Homebrew (recommended)
+### Homebrew
 
 ```bash
 brew install arashrasoulzadeh/tap/devenv
@@ -62,13 +45,13 @@ chmod +x devenv
 sudo mv devenv /usr/local/bin/
 ```
 
-📥 Releases: https://github.com/arashrasoulzadeh/devenv/releases
+Releases: https://github.com/arashrasoulzadeh/devenv/releases
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
-### 1. Create config
+### 1. Create `config.toml`
 
 ```toml
 [output]
@@ -76,131 +59,145 @@ name = ".env"
 type = "dotenv"
 
 [base]
-app_name = "devenv"
-db_host = "localhost"
-db_user = "root"
+app_name = "myapp"
+db_host  = "localhost"
+db_user  = "root"
 
 [dev]
 db_host = "dev.internal"
 db_user = "dev_user"
+
+[prod]
+db_host = "db.prod.internal"
+db_user = "prod_user"
 ```
 
-### 2. Run
+### 2. Generate the config file
 
 ```bash
 devenv dev
 ```
 
-### 3. Output
-
-#### Dotenv
+### 3. Output (dotenv)
 
 ```env
-app_name=devenv
-db_host=dev.internal
-db_user=dev_user
+app_name="myapp"
+db_host="dev.internal"
+db_user="dev_user"
 ```
 
-#### YAML
+The same config with `type = "yaml"`:
 
 ```yaml
-app_name: "devenv"
+app_name: "myapp"
 db_host: "dev.internal"
 db_user: "dev_user"
 ```
 
-#### TOML
+Or `type = "toml"`:
 
 ```toml
-app_name = "devenv"
+app_name = "myapp"
 db_host = "dev.internal"
 db_user = "dev_user"
 ```
 
 ---
 
-## 🧰 CLI Usage
+## CLI Reference
+
+### Generate a config file
 
 ```bash
 devenv [environment]
 ```
 
-### Examples
+Merges `[base]` with the named environment section and writes the output file.
 
 ```bash
-devenv dev
-devenv staging
-devenv prod
+devenv dev      # merge base + [dev], write output
+devenv staging  # merge base + [staging], write output
+devenv prod     # merge base + [prod], write output
+devenv          # write base only (no overlay)
 ```
+
+### Check missing environment variables
+
+```bash
+devenv env <environment> [--no-values]
+```
+
+Compares the merged config for the given environment against your current OS environment and reports any keys that are not set.
+
+```bash
+devenv env dev              # show missing keys with their values
+devenv env prod --no-values # show missing keys without exposing values
+```
+
+### Other commands
+
+| Command          | Description                     |
+|------------------|---------------------------------|
+| `devenv help`    | Show help                       |
+| `devenv version` | Show version and build metadata |
 
 ### Flags
 
-| Flag          | Description                      |
-|---------------|----------------------------------|
-| --config FILE | Specify custom config file path   |
-
-You can pass flags before or after the environment name:
+| Flag            | Description                                                    |
+|-----------------|----------------------------------------------------------------|
+| `--config FILE` | Use a custom config file path (default: `config.toml`)         |
+| `--dont-commit` | Dry-run: merge and validate without writing the output file    |
+| `--no-values`   | Hide values in the missing-keys report (use with `env`)        |
 
 ```bash
-devenv --config myconf.toml dev
+devenv --config path/to/myconf.toml dev
+devenv dev --dont-commit
+devenv env prod --no-values
 ```
-
-These flags allow you to customize the config file source and where output files are written.
-
-
-### Commands
-
-| Command            | Description                  |
-|-------------------|------------------------------|
-| devenv dev        | Generate dev config          |
-| devenv staging    | Generate staging config      |
-| devenv prod       | Generate production config   |
-| devenv help       | Show help                    |
-| devenv version    | Show version info            |
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ```toml
 [output]
-name = ".env"
-type = "dotenv"
+name = ".env"       # output file name
+type = "dotenv"     # dotenv | yaml | toml
 
 [base]
-# shared values
+# shared defaults applied to every environment
 
 [dev]
-# overrides
+# keys here override [base] for: devenv dev
 
 [prod]
-# overrides
+# keys here override [base] for: devenv prod
 ```
 
-### Rules
+Merge rules:
 
 1. Load `[base]`
-2. Apply environment overrides
-3. Merge deterministically
-4. Render output format
+2. Apply the selected environment's overrides (environment keys win over base)
+3. Render to the configured output format
+4. Write to `output.name`
 
 ---
 
-## 🧠 How It Works
+## How It Works
 
 ```mermaid
 flowchart TD
-    A[CLI Input] --> B[Load Config]
-    B --> C[Base Layer]
-    C --> D[Env Override]
-    D --> E[Merge Engine]
-    E --> F[Renderer]
-    F --> G[Output File]
+    A[CLI Input] --> B[Load config.toml]
+    B --> C[base layer]
+    C --> D[environment overrides]
+    D --> E[merge]
+    E --> F[render dotenv / yaml / toml]
+    F --> G[write output file]
 ```
 
 ---
 
-## 💡 CI/CD Example
+## CI/CD
 
 ```bash
 devenv prod && export $(cat .env | xargs)
@@ -208,36 +205,23 @@ devenv prod && export $(cat .env | xargs)
 
 ---
 
-## ❓ FAQ
+## FAQ
 
-**Missing key?**  
-Falls back to `base`. If not found → error.
+**Can I define unlimited environments?**
+Yes — any TOML section that is not `[base]` or `[output]` is treated as an environment.
 
-**Unlimited environments?**  
-Yes.
+**What output formats are supported?**
+`dotenv`, `yaml`, and `toml`.
 
-**Deterministic?**  
-Always.
+**Is the output deterministic?**
+Yes. Keys are always sorted alphabetically, so the file is stable across runs.
 
-**Supported formats?**  
-dotenv, YAML, TOML
-
----
-
-## 🏗 Architecture
-
-```mermaid
-flowchart LR
-    CLI --> Parser
-    Parser --> Config
-    Config --> MergeEngine
-    MergeEngine --> Renderer
-    Renderer --> FileSystem
-```
+**What happens if a key only exists in `[base]` and not in the selected environment?**
+It is included as-is from `[base]`.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 ```bash
 git clone https://github.com/arashrasoulzadeh/devenv
@@ -248,12 +232,6 @@ PRs welcome.
 
 ---
 
-## 📄 License
+## License
 
 MIT © Arash Rasoulzadeh
-
----
-
-## ⭐ Star History
-
-If you like this project, give it a ⭐ on GitHub!

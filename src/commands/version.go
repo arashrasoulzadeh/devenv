@@ -1,8 +1,9 @@
 package commands
 
 import (
-	"fmt"
 	"os"
+
+	"github.com/arashrasoulzadeh/devenv/src/log"
 )
 
 var (
@@ -22,10 +23,10 @@ func VersionCommand(args []string) {
 		buildDate = "unknown"
 	}
 
-	fmt.Println("devenv")
-	fmt.Println(" commit:    ", commit)
-	fmt.Println(" platform:  ", platform)
-	fmt.Println(" built at:  ", buildDate)
+	log.Print("devenv")
+	log.Print(" commit:    ", commit)
+	log.Print(" platform:  ", platform)
+	log.Print(" built at:  ", buildDate)
 
 	os.Exit(0)
 }

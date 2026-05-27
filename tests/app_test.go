@@ -40,7 +40,6 @@ type = "dotenv"
 DEBUG = true
 `)
 
-	// 🔥 NEW: instance-based config
 	c := config.New()
 	if err := c.Load(configPath); err != nil {
 		t.Fatalf("config load failed: %v", err)
@@ -82,7 +81,6 @@ PORT = 80
 DEBUG = false
 `)
 
-	// 🔥 NEW: instance-based config
 	c := config.New()
 	if err := c.Load(configPath); err != nil {
 		t.Fatalf("config load failed: %v", err)

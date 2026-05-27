@@ -47,7 +47,6 @@ PORT = 80
 	tmpFile := filepath.Join(t.TempDir(), "config.toml")
 	writeFile(t, tmpFile, content)
 
-	// 🔥 NEW: instance-based config (no global state)
 	c := config.New()
 
 	if err := c.Load(tmpFile); err != nil {
