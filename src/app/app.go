@@ -3,8 +3,10 @@ package app
 import (
 	"fmt"
 	"path/filepath"
+	"slices"
 
 	"github.com/arashrasoulzadeh/devenv/src/config"
+	"github.com/arashrasoulzadeh/devenv/src/consts"
 	"github.com/arashrasoulzadeh/devenv/src/io"
 	"github.com/arashrasoulzadeh/devenv/src/log"
 	"github.com/arashrasoulzadeh/devenv/src/renderer"
@@ -13,12 +15,14 @@ import (
 type Runner struct {
 	cfg       *config.Config
 	OutputDir string
+	FinalCfg  map[string]any
 }
 
 func New(cfg *config.Config) *Runner {
 	return &Runner{
 		cfg:       cfg,
 		OutputDir: ".",
+		FinalCfg:  map[string]any{},
 	}
 }
 
@@ -59,7 +63,6 @@ func (r *Runner) Run(args []string) error {
 			return fmt.Errorf("environment '%s' not found", env)
 		}
 
-		log.Info("switching to", env)
 	}
 
 	// ---- merge config ----
@@ -78,6 +81,8 @@ func (r *Runner) Run(args []string) error {
 	// ---- output config ----
 	outputName := ".env"
 	outputType := "dotenv"
+
+	r.FinalCfg = final
 
 	if v, ok := outputMeta["name"].(string); ok && v != "" {
 		outputName = v
@@ -104,11 +109,13 @@ func (r *Runner) Run(args []string) error {
 
 	fullPath := filepath.Join(r.OutputDir, outputName)
 
-	if err := io.SaveToFile(fullPath, formatted); err != nil {
-		return fmt.Errorf("failed to write output file: %w", err)
+	if !slices.Contains(args, consts.DontCommitFlag) {
+		if err := io.SaveToFile(fullPath, formatted); err != nil {
+			return fmt.Errorf("failed to write output file: %w", err)
+		}
+		log.Info("switching to", env)
+		log.Info("generated file:", fullPath)
 	}
-
-	log.Info("generated file:", fullPath)
 
 	return nil
 }

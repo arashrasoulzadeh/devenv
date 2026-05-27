@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/arashrasoulzadeh/devenv/src/app"
 	"github.com/arashrasoulzadeh/devenv/src/log"
 )
 
@@ -15,7 +16,7 @@ func main() {
 		return
 	}
 
-	r := mustInitApp(cli.ConfigFile)
+	r := app.MustInitApp(cli.ConfigFile)
 
 	if err := Dispatch(cli, r); err != nil {
 		log.Fatal(err.Error())
