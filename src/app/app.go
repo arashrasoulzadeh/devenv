@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"maps"
 	"path/filepath"
 	"slices"
 
@@ -42,13 +43,9 @@ func (r *Runner) Run(args []string) error {
 	for k, v := range raw {
 		switch k {
 		case "base":
-			for k2, v2 := range v {
-				base[k2] = v2
-			}
+			maps.Copy(base, v)
 		case "output":
-			for k2, v2 := range v {
-				outputMeta[k2] = v2
-			}
+			maps.Copy(outputMeta, v)
 		default:
 			variants[k] = v
 		}

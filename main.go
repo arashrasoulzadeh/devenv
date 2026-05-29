@@ -9,6 +9,7 @@ import (
 
 func main() {
 	log.Start()
+	defer log.Flush()
 
 	cli := ParseCLI(os.Args)
 

@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"slices"
 	"strings"
@@ -25,13 +26,26 @@ func EnvCommand(args []string, r *app.Runner) {
 		log.Fatal(err)
 	}
 
+	existsCount := 0
+	notExistsCount := 0
+
 	for key, value := range r.FinalCfg {
 		if _, exists := osEnv[key]; !exists {
+			notExistsCount++
 			if slices.Contains(args, consts.NoValuesFlag) {
 				log.Info(fmt.Sprintf("environment does not have %s", key))
 			} else {
 				log.Info(fmt.Sprintf("environment does not have %s=%v", key, value))
 			}
+		} else {
+			existsCount++
+		}
+	}
+
+	if notExistsCount > 0 {
+		if slices.Contains(args, consts.PercentEnvFlag) {
+			notExistsPercent := int(math.Round((float64(notExistsCount) / float64(len(r.FinalCfg))) * 100))
+			log.Info(fmt.Sprintf("about %d percent of env in config does not exists in os env", notExistsPercent))
 		}
 	}
 }

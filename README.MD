@@ -137,17 +137,22 @@ devenv env prod --no-values # show missing keys without exposing values
 ### Other commands
 
 | Command          | Description                     |
-|------------------|---------------------------------|
+| ---------------- | ------------------------------- |
 | `devenv help`    | Show help                       |
 | `devenv version` | Show version and build metadata |
 
 ### Flags
 
-| Flag            | Description                                                    |
-|-----------------|----------------------------------------------------------------|
-| `--config FILE` | Use a custom config file path (default: `config.toml`)         |
-| `--dont-commit` | Dry-run: merge and validate without writing the output file    |
-| `--no-values`   | Hide values in the missing-keys report (use with `env`)        |
+| Flag            | Description                                                 |
+| --------------- | ----------------------------------------------------------- |
+| `--config FILE` | Use a custom config file path (default: `config.toml`)      |
+| `--dont-commit` | Dry-run: merge and validate without writing the output file |
+| `--no-values`   | Hide values in the missing-keys report (use with `env`)     |
+| `--percent`     | show a message with percent of not exists config in env     |
+| `--json`        | flush messages of log as JSON                               |
+| `--color`       | colorize text output                                        |
+
+- logs and outputs are flushed on defer.
 
 ```bash
 devenv --config path/to/myconf.toml dev

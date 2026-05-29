@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 
 	"github.com/BurntSushi/toml"
@@ -47,9 +48,8 @@ func (c *Config) Get() map[string]map[string]any {
 
 	for k, v := range c.data {
 		cp := make(map[string]any, len(v))
-		for k2, v2 := range v {
-			cp[k2] = v2
-		}
+		maps.Copy(cp, v)
+
 		out[k] = cp
 	}
 
