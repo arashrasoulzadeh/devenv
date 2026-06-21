@@ -11,6 +11,7 @@
   <a href="https://goreportcard.com/report/github.com/arashrasoulzadeh/devenv">
     <img src="https://goreportcard.com/badge/github.com/arashrasoulzadeh/devenv" alt="Go Report Card">
   </a>
+<a href="https://app.fossa.com/projects/git%2Bgithub.com%2Farashrasoulzadeh%2Fdevenv?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Farashrasoulzadeh%2Fdevenv.svg?type=shield"/></a>
   <a href="./LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
   </a>
@@ -20,6 +21,9 @@
 </p>
 
 ---
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Farashrasoulzadeh%2Fdevenv.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Farashrasoulzadeh%2Fdevenv?ref=badge_large)
 
 ## Overview
 
